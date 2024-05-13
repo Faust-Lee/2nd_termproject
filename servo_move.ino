@@ -3,7 +3,8 @@ SMS_STS servo;  //635~3484
 
 #define l2 150 //unit: mm
 #define l3 100
-
+#define servo_v 3000
+#define servo_a 50
 float current_deg[2] = {90, 0};
 
 
@@ -12,7 +13,7 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(1000000);
   servo.pSerial = &Serial1;
-  servo.WritePosEx(9, 2047, 2400, 50);
+  servo.WritePosEx(9, 2047, 2400, 50);              // 위치 초기화
   servo.WritePosEx(11, 2047, 2400, 50);
   delay(1000);
 
@@ -62,17 +63,18 @@ void servo_move2(int x, int y) {
 
   int current_deg_pwm[2] = {map (current_deg[0], 0, 180, 3072, 1024), map (current_deg[1], -90, 90, 3072, 1024)};
   int target_deg_pwm[2] = {map (target_deg[0], 0, 180, 3072, 1024), map (target_deg[1], -90, 90, 3072, 1024)};
-  int delta_pwm[2] = {abs(current_deg_pwm[0] - target_deg_pwm[0]), abs(current_deg_pwm[1] - target_deg_pwm[1])};
+  int delta_pwm[2] = {current_deg_pwm[0] - target_deg_pwm[0], current_deg_pwm[1] - target_deg_pwm[1]};
 
-
-  servo.WritePosEx(9, map (target_deg[0], 0, 180, 3072, 1024), 2400, 50);
-
-  servo.WritePosEx(11, map (target_deg[1], -90, 90, 3072, 1024), 2400, 50);
-
-
-
-
-
+  if (delta_pwm[0] > delta_pwm[1]) {
+    float tmp = delta_pwm[1] / delta_pwm[0];
+    servo.WritePosEx(9, target_deg_pwm[0], servo_v, servo_a);
+    servo.WritePosEx(11, target_deg_pwm[1], servo_v * tmp, servo_a * tmp);
+  } else {
+    float tmp = delta_pwm[0] / delta_pwm[1];
+    servo.WritePosEx(9, target_deg_pwm[0], servo_v * tmp, servo_a * tmp);
+    servo.WritePosEx(11, target_deg_pwm[1], servo_v, servo_a);
+  }
+  delay(1000);
 
   current_deg[0] = target_deg[0];                  // 현재 위치 업데이트
   current_deg[1] = target_deg[1];
