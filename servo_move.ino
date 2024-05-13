@@ -37,8 +37,9 @@ void loop() {
 }
 
 void servo_move2(int x, int y){
-  bool theta1=1,theta2=1;
-  float target_deg[2],deg[2][2];
+  bool theta1=1,theta2=1;                                                               // 구해진 2개의 값중 사용할수 있는 값만 1
+  float target_deg[2] = {current_deg[0],current_deg[1]},deg[2][2];                      // 구해진 값들중 사용할 수 있는값이 없을때 현재위치에서 움직이지 않기 위해 현재위치로 초기화
+  
   float d = sqrt(pow(x, 2) + pow(y, 2));
   float D = (pow(d, 2) - pow(l2, 2) - pow(l3, 2)) / (2.0 * l2 * l3);
   
@@ -50,11 +51,19 @@ void servo_move2(int x, int y){
     for (int j=0;j<2;j++)
       deg[i][j] *= (180 / PI);
   
-  if (deg[0][0]<0||180<deg[0][0]||-90>deg[1][0]||90<deg[1][0]) theta1 = 0;
+  if (deg[0][0]<0||180<deg[0][0]||-90>deg[1][0]||90<deg[1][0]) theta1 = 0;               // 사용할수 있는 값인지 판별
   if(deg[0][1]<0||180<deg[0][1]||-90>deg[1][1]||90<deg[1][1]) theta2 = 0;
   
+  if(theta1){
+      target_deg[0] = deg[0][0];
+      target_deg[1] = deg[1][0];
+  }
+  if(theta2){
+      target_deg[0] = deg[0][1];
+      target_deg[1] = deg[1][1];
+  }
   if(theta1&&theta2){
-    if( abs(current_deg[0]-deg[0][0])+abs(current_deg[1]-deg[1][0]) < abs(current_deg[0]-deg[0][1])+abs(current_deg[1]-deg[1][1])){
+    if( abs(current_deg[0]-deg[0][0])+abs(current_deg[1]-deg[1][0]) < abs(current_deg[0]-deg[0][1])+abs(current_deg[1]-deg[1][1])){   // 둘다 사용할 수 있을때 움직여야하는 범위가 더 작은 값을 선택
       target_deg[0] = deg[0][0];
       target_deg[1] = deg[1][0];
     }
@@ -63,18 +72,22 @@ void servo_move2(int x, int y){
       target_deg[1] = deg[1][1];
     }
   }
-  else if(theta1){
-      target_deg[0] = deg[0][0];
-      target_deg[1] = deg[1][0];
-  }
-  else if(theta2){
-      target_deg[0] = deg[0][1];
-      target_deg[1] = deg[1][1];
-  }
-  delta_theta1=abs(map (current_deg[0], 0, 180, 3072, 1024)-map (target_deg[0], 0, 180, 3072, 1024));
-  delta_theta2=abs(map (current_deg[1], 0, 180, 3072, 1024)-map (target_deg[1], 0, 180, 3072, 1024));
+
+  int current_deg_pwm[2] = {map (current_deg[0], 0, 180, 3072, 1024),map (current_deg[1], -90, 90, 3072, 1024)};
+  int target_deg_pwm[2] = {map (target_deg[0], 0, 180, 3072, 1024),map (target_deg[1], -90, 90, 3072, 1024)};
+  int delta_pwm[2] = {abs(current_deg_pwm[0]-target_deg_pwm[0]),abs(current_deg_pwm[1]-target_deg_pwm[1])};
+  
 
   servo.WritePosEx(9, map (target_deg[0], 0, 180, 3072, 1024), 2400, 50);
   
   servo.WritePosEx(11, map (target_deg[1], -90, 90, 3072, 1024), 2400, 50);
+
+
+
+
+
+  
+  current_deg_[0] = target_deg[0];                  // 현재 위치 업데이트
+  current_deg_[1] = target_deg[1];
+  
 }
