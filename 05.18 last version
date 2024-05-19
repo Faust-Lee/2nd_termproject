@@ -54,9 +54,9 @@ void loop() {
   scan_tags();
   for (int i = i; i <= 6; i++) {
     arm.movep(mids[i].x, mids[i].y);
-    catch_block(mids[i]);
+    catch_block(mids[i]);//블록 내려가서 집고 올리기
     arm.movep(targets[i].x, targets[i].y);
-    move_block(targets[i]);
+    move_block(targets[i]);//블록 내려놓기
   }
 }
 
@@ -109,11 +109,12 @@ void catch_block(coordinate mid) {
     myservo4.write(pos4);
     delay(15);
   }
-}
 
+arm.movez(400);
+
+}
 void move_block(coordinate target) {
-  arm.movep(target.x, target.y);
-  delay(500); // 로봇 팔이 움직일 시간을 줌
+//3번서보 타겟 기울기 만큼 회전시키기
 
   arm.movez(20);
 
@@ -121,6 +122,4 @@ void move_block(coordinate target) {
     myservo4.write(pos4);
     delay(15);
   }
-  arm.movep(100, 150);
-  delay(2000);
 }
