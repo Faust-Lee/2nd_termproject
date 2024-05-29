@@ -58,7 +58,6 @@ void grip_and_drop(int block) {
   myservo3.write(targets[block].slope);
   delay(500);
   arm.movez(targets[block].z);
-  // bibigi(block);
   myservo4.write(25);
   delay(500);
   arm.movez(height);
